@@ -4,6 +4,7 @@ import base64
 import cv2
 import numpy as np
 import subprocess
+import sys
 from flask import Flask, render_template, request, jsonify
 from firebase_config import db
 # from register_face import register_student
@@ -42,54 +43,62 @@ def home():
 @app.route("/register_student", methods=["POST"])
 def register_student():
 
-    name = request.json["name"]
-    print(name)
-    roll = request.json["roll"]
-    dept = request.json["dept"]
-    images = request.json["images"]
+    try:
 
-    folder = f"{name}_{roll}"
-    path = os.path.join(DATASET, folder)
+        data = request.get_json()
+        name = data.get("name")
+        print(name)
+        roll = data.get("roll")
+        dept = data.get("dept")
+        images = data.get("images", [])
 
-    os.makedirs(path, exist_ok=True)
-
-    # Save student in firebase...
-    db.collection("students").add({
-        "name": name,
-        "roll_no": roll,
-        "department": dept
-    })
-    
-    for i, img in enumerate(images):
+        print("Images received:", len(images))
         
-        img_data = base64.b64decode(img.split(",")[1])
-        nparr = np.frombuffer(img_data, np.uint8)
+        folder = f"{name}_{roll}"
+        path = os.path.join(DATASET, folder)
 
-        frame = cv2.imdecode(nparr, cv2.IMREAD_COLOR)
-        gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+        os.makedirs(path, exist_ok=True)
 
-        faces = face_cascade.detectMultiScale(
-            gray,
-            scaleFactor=1.3,
-            minNeighbors=5
-        )
-
-        for (x, y, w, h) in faces:
+        # Save student in firebase...
+        db.collection("students").add({
+            "name": name,
+            "roll_no": roll,
+            "department": dept
+        })
+        
+        for i, img in enumerate(images):
             
-            face = gray[y:y+h, x:x+w]
-            face = cv2.resize(face, (200, 200))
+            img_data = base64.b64decode(img.split(",")[1])
+            nparr = np.frombuffer(img_data, np.uint8)
 
-            img_path = os.path.join(path, f"img{i}.jpg")
+            frame = cv2.imdecode(nparr, cv2.IMREAD_COLOR)
+            gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
 
-            cv2.imwrite(img_path, face)
+            faces = face_cascade.detectMultiScale(
+                gray,
+                scaleFactor=1.3,
+                minNeighbors=5
+            )
 
-            break
+            for (x, y, w, h) in faces:
+                
+                face = gray[y:y+h, x:x+w]
+                face = cv2.resize(face, (200, 200))
 
-# TRAIN MODEL AUTOMATICALLY
-    subprocess.run(["python3", "train_model.py"])
+                img_path = os.path.join(path, f"img{i}.jpg")
 
-    return jsonify({"message": "Student Registered and Model Trained"})
+                cv2.imwrite(img_path, face)
 
+                break
+
+    # TRAIN MODEL AUTOMATICALLY
+        subprocess.run(["sys.executable", "train_model.py"])
+
+        return jsonify({"message": "Student Registered and Model Trained"})
+
+    except Exception as e:
+        print("Error:", e)
+        return jsonify({"error": str(e)}), 500
 
 @app.route("/students")
 def get_students():

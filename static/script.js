@@ -131,8 +131,8 @@ function registerStudent() {
     let roll = document.getElementById("roll").value;
     let dept = document.getElementById("dept").value;
 
-    if (name == "" || name == null) {
-        name.textContent = "Username must be filled out";
+    if (name === "") {
+        alert("Username must be filled out");
         return false;
     }
     else if (roll == "" || roll == null) {
@@ -144,7 +144,7 @@ function registerStudent() {
         return false;
     }
 
-    fetch("/register_student", {
+    fetch("/register_student", {  
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -154,8 +154,15 @@ function registerStudent() {
             images: images
         })
     })
-        .then(res => res.json())
+        // .then(res => res.json())
+        .then(res => {
+            if(!res.ok){
+                throw new Error("Server error")
+            }
+            return res.json()
+        })
         .then(data => alert(data.message))
+        .catch(err => console.error(err))
 }
 
 function startAttendance() {
