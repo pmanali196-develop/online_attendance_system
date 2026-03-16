@@ -92,7 +92,7 @@ def register_student():
                 break
 
     # TRAIN MODEL AUTOMATICALLY
-        subprocess.run(["sys.executable", "train_model.py"])
+        subprocess.run([sys.executable, "train_model.py"])
 
         return jsonify({"message": "Student Registered and Model Trained"})
 
