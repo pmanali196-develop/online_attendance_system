@@ -1,0 +1,7 @@
+# Ignore firebase key json file
+.firebase_key.json
+# Ignore environment files
+.venv/
+__pycache__/
+.vscode/
+.new_env/
