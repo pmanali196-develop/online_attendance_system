@@ -1,0 +1,41 @@
+body{
+font-family: Arial;
+background:#f4f6f9;
+text-align:center;
+}
+
+.card{
+background:white;
+padding:20px;
+margin:20px auto;
+width:400px;
+border-radius:10px;
+box-shadow:0 0 10px rgba(0,0,0,0.1);
+}
+
+input{
+padding:10px;
+margin:5px;
+width:80%;
+}
+
+canvas{
+border:3px solid #2ecc71;
+border-radius:10px;
+}
+
+button{
+padding:10px 20px;
+margin:10px;
+cursor:pointer;
+}
+
+table{
+margin:auto;
+border-collapse:collapse;
+}
+
+td,th{
+border:1px solid #ccc;
+padding:8px;
+}

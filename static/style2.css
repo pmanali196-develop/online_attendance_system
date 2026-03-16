@@ -1,0 +1,161 @@
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&display=swap');
+
+*{
+margin:0;
+padding:0;
+box-sizing:border-box;
+font-family:'Poppins',sans-serif;
+}
+
+/* Gradient Background */
+body{
+background: linear-gradient(135deg,#ff4d4d,#ffffff);
+min-height:100vh;
+text-align:center;
+padding:40px 20px;
+}
+
+/* Main Title */
+h1{
+color:black;
+margin-bottom:30px;
+font-size:32px;
+font-weight:600;
+}
+
+/* Cards */
+.card{
+background:white;
+padding:25px;
+margin:20px auto;
+width:420px;
+border-radius:12px;
+box-shadow:0 8px 20px rgba(0,0,0,0.15);
+transition:0.3s;
+}
+
+/* Card hover animation */
+.card:hover{
+transform:translateY(-6px);
+box-shadow:0 12px 30px rgba(0,0,0,0.2);
+}
+
+/* Section title */
+.card h2{
+color:#b30000;
+margin-bottom:15px;
+}
+
+/* Input fields */
+input{
+width:90%;
+padding:12px;
+margin:8px 0;
+border-radius:8px;
+border:1px solid #ccc;
+font-size:14px;
+outline:none;
+transition:0.2s;
+}
+
+/* Input focus */
+input:focus{
+border-color:#ff4d4d;
+box-shadow:0 0 6px rgba(255,0,0,0.3);
+}
+
+/* Camera canvas */
+canvas{
+border:3px solid #ff4d4d;
+border-radius:10px;
+margin-top:10px;
+}
+
+/* Buttons */
+button{
+padding:10px 20px;
+margin:8px;
+border:none;
+border-radius:8px;
+background:#ff3333;
+color:white;
+font-weight:500;
+cursor:pointer;
+transition:0.25s;
+}
+
+/* Button hover */
+button:hover{
+background:#cc0000;
+transform:scale(1.05);
+}
+
+/* Disabled button */
+button:disabled{
+background:#aaa;
+cursor:not-allowed;
+}
+
+/* Warning text */
+#warning{
+color:red;
+font-weight:bold;
+margin-top:10px;
+}
+
+/* Image counter */
+#count{
+margin-top:10px;
+font-size:14px;
+}
+
+/* Output section */
+#output{
+margin-top:30px;
+width:80%;
+margin-left:auto;
+margin-right:auto;
+}
+
+/* Table */
+table{
+width:100%;
+border-collapse:collapse;
+background:white;
+border-radius:10px;
+overflow:hidden;
+box-shadow:0 5px 15px rgba(0,0,0,0.1);
+}
+
+th{
+background:#ff3333;
+color:white;
+}
+
+td,th{
+padding:12px;
+border-bottom:1px solid #eee;
+}
+
+/* Table row hover */
+tr:hover{
+background:#ffe5e5;
+}
+
+/* Mobile responsive */
+@media(max-width:600px){
+
+.card{
+width:95%;
+}
+
+input{
+width:100%;
+}
+
+canvas{
+width:100%;
+height:auto;
+}
+
+}
