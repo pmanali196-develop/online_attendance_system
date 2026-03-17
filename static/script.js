@@ -32,41 +32,41 @@ function onOpenCvReady() {
     //     })
 
     cv.onRuntimeInitialized = async () => {     // Wait for opencv
-    try {
-        faceCascade = new cv.CascadeClassifier();
+        try {
+            faceCascade = new cv.CascadeClassifier();
 
-        let response = await fetch('/static/haarcascade_frontalface_default.xml');
+            let response = await fetch('/static/haarcascade_frontalface_default.xml');
 
-        // Check fetch success...
-        if (!response.ok) {
-            throw new Error("Failed to fetch cascade: " + response.status);
+            // Check fetch success...
+            if (!response.ok) {
+                throw new Error("Failed to fetch cascade: " + response.status);
+            }
+
+            let data = await response.arrayBuffer();
+            let bytes = new Uint8Array(data);
+
+            cv.FS_createDataFile('/', 'face.xml', bytes, true, false, false);
+
+            let loaded = faceCascade.load('face.xml');
+
+            // Validate cascade load
+            if (!loaded) {
+                throw new Error("Cascade load failed");
+            }
+
+            console.log("Cascade loaded successfully");
+
+            startDetection();
+
+        } catch (err) {
+            console.error("Error loading cascade:", err);
+
+            // Retry logic after delay (important for Render cold starts)
+            setTimeout(() => {
+                location.reload();
+            }, 2000);
         }
-
-        let data = await response.arrayBuffer();
-        let bytes = new Uint8Array(data);
-
-        cv.FS_createDataFile('/', 'face.xml', bytes, true, false, false);
-
-        let loaded = faceCascade.load('face.xml');
-
-        // Validate cascade load
-        if (!loaded) {
-            throw new Error("Cascade load failed");
-        }
-
-        console.log("Cascade loaded successfully");
-
-        startDetection();
-
-    } catch (err) {
-        console.error("Error loading cascade:", err);
-
-        // Retry logic after delay (important for Render cold starts)
-        setTimeout(() => {
-            location.reload();
-        }, 2000);
-    }
-};
+    };
 }
 
 function startDetection() {
@@ -90,6 +90,7 @@ function startDetection() {
         if (faces.size() > 0) {
 
             let face = faces.get(0)
+            lastDetectedFace = face
 
             ctx.strokeStyle = "lime"
             ctx.lineWidth = 2
@@ -114,20 +115,40 @@ function autoCapture() {
 
     if (now - lastCaptureTime > captureInterval) {
 
-        let data = canvas.toDataURL("image/jpeg")
+        if (lastDetectedFace) {
+            let f = lastDetectedFace
 
-        images.push(data)
+            let tempCanvas = document.createElement("canvas")
+            tempCanvas.width = f.width
+            tempCanvas.height = f.height
 
-        lastCaptureTime = now
+            let tctx = tempCanvas.getContext("2d")
 
-        document.getElementById("count").innerText =
-            "Images: " + images.length + " / " + maxImages
+            tctx.drawImage(canvas, f.x, f.y, f.width, f.height, 0, 0, f.width, f.height)
+
+            let data = tempCanvas.toDataURL("image/jpeg")
+
+            images.push(data)
+            lastCaptureTime = now
+
+            document.getElementById("count").innerText =
+                "Images: " + images.length + " / " + maxImages
+        }
+
+        // let data = canvas.toDataURL("image/jpeg")
+
+        // images.push(data)
+
+        // lastCaptureTime = now
+
+        // document.getElementById("count").innerText =
+        //     "Images: " + images.length + " / " + maxImages
     }
 
-    if (images.length == maxImages) {
-        document.getElementById("faceCapturedMessage").innerText = "Face capture complete. Click Register."
-        document.getElementById("registerBtn").disabled = false
-    }
+    // if (images.length == maxImages) {
+    //     document.getElementById("faceCapturedMessage").innerText = "Face capture complete. Click Register."
+    //     document.getElementById("registerBtn").disabled = false
+    // }
 }
 
 // function capture() {
@@ -181,7 +202,7 @@ function registerStudent() {
         return false;
     }
 
-    fetch("/register_student", {  
+    fetch("/register_student", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -192,53 +213,57 @@ function registerStudent() {
         })
     })
         // .then(res => res.json())
-        .then(res => {
-            if(!res.ok){
-                throw new Error("Server error")
-            }
-            return res.json()
-        })
+        .then(res => res.json())
         .then(data => alert(data.message))
-        .catch(err => console.error(err))
+        // .catch(err => console.error(err))
 }
 
-function startAttendance() {
+function markAttendance() {
 
-    fetch("/start_attendance")
+    // fetch("/start_attendance")
+    //     .then(res => res.json())
+    //     .then(data => alert(data.message))
+    let data = canvas.toDataURL("image/jpeg")
+
+    fetch("/mark_attendance", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ image: data })
+    })
         .then(res => res.json())
         .then(data => alert(data.message))
 }
 
-function loadStudents() {
+// function loadStudents() {
 
-    fetch("/students")
-        .then(res => res.json())
-        .then(data => {
+//     fetch("/students")
+//         .then(res => res.json())
+//         .then(data => {
 
-            let html = "<table><tr><th>ID</th><th>Name</th><th>Roll</th><th>Dept</th></tr>"
+//             let html = "<table><tr><th>ID</th><th>Name</th><th>Roll</th><th>Dept</th></tr>"
 
-            data.forEach(s => {
-                html += `<tr>
-<td>${s[0]}</td>
-<td>${s[1]}</td>
-<td>${s[2]}</td>
-<td>${s[3]}</td>
-</tr>`
-            })
+//             data.forEach(s => {
+//                 html += `<tr>
+// <td>${s[0]}</td>
+// <td>${s[1]}</td>
+// <td>${s[2]}</td>
+// <td>${s[3]}</td>
+// </tr>`
+//             })
 
-            html += "</table>"
+//             html += "</table>"
 
-            document.getElementById("output").innerHTML = html
-        })
-}
+//             document.getElementById("output").innerHTML = html
+//         })
+// }
 
-async function loadAttendance(){
+// async function loadAttendance() {
 
-    const res = await fetch("/attendance")
-    const data = await res.json()
+//     const res = await fetch("/attendance")
+//     const data = await res.json()
 
-    console.log(data)
-}
+//     console.log(data)
+// }
 // function loadAttendance() { - 16 march 2026
 
 //     fetch("/attendance")

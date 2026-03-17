@@ -1,82 +1,33 @@
 <!DOCTYPE html>
 <html>
-
 <head>
-    <title>Face Attendance System</title>
-    <link rel="stylesheet" href="/static/style1.css">
-    <script async src="https://docs.opencv.org/4.x/opencv.js"></script>
-
-    <!-- <script>
-        cv['onRuntimeInitialized'] = () => {
-
-            let utils = new Utils('errorMessage')
-
-            utils.createFileFromUrl(
-                'faceCascade',
-                '/static/haarcascade_frontalface_default.xml',
-                () => {
-                    faceCascade = new cv.CascadeClassifier()
-                    faceCascade.load('faceCascade')
-                    startDetection()
-                }
-            )
-        }
-    </script> -->
+    <title>Attendance System</title>
 </head>
 
 <body>
 
-    <div class="header">
-        <h1>GCET College</h1>
-            <p>Face Attendance System</p>
-    </div>
+<h2>Register Student</h2>
 
-    <div class="container">
+<input id="name" placeholder="Name">
+<input id="roll" placeholder="Roll No">
+<input id="dept" placeholder="Department">
 
-        <div class="card">
+<br><br>
 
-            <h2>Register Student</h2>
+<video id="video" autoplay style="display:none"></video>
+<canvas id="canvas" width="320" height="240"></canvas>
 
-            <input type="text" id="name" placeholder="Name">
-            <input type="number" id="roll" placeholder="Roll No">
-            <input type="text" id="dept" placeholder="Department">
+<p id="count">Images: 0</p>
 
-            <br><br>
+<button onclick="registerStudent()">Register</button>
 
-            <video id="video" width="320" height="240" autoplay style="display: none;"></video>
-            <canvas id="canvas" width="320" height="240"></canvas>
+<hr>
 
-            <p id="warning" style="color:red;font-weight:bold"></p>
+<h2>Mark Attendance</h2>
+<button onclick="markAttendance()">Start Attendance</button>
 
-            <br>
-
-            <p id="faceCapturedMessage"></p>
-
-            <button id="registerBtn" onclick="registerStudent()" disabled>Register</button>
-
-            <p id="count">Images: 0 / 20</p>
-
-        </div>
-
-        <div class="card">
-
-            <h2>Attendance</h2>
-
-            <button onclick="startAttendance()">Start Attendance</button>
-            <button onclick="loadStudents()">View Students</button>
-            <button onclick="loadAttendance()">View Attendance</button>
-
-        </div>
-
-    </div>
-
-    <div id="output"></div>
-
-    <script src="/static/script.js"></script>
-    <script>
-        cv['onRuntimeInitialized'] = onOpenCvReady;
-    </script>
+<script src="https://docs.opencv.org/4.x/opencv.js" onload="onOpenCvReady()"></script>
+<script src="/static/script.js"></script>
 
 </body>
-
 </html>

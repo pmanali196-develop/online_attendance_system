@@ -1,5 +1,5 @@
 import firebase_admin
-from firebase_admin import credentials, firestore
+from firebase_admin import credentials, firestore, storage
 import os
 import json
 
@@ -12,6 +12,9 @@ firebase_key = json.loads(os.environ["FIREBASE_KEY"])
 
 cred = credentials.Certificate(firebase_key)
 
-firebase_admin.initialize_app(cred)
+firebase_admin.initialize_app(cred, {
+    'storageBucket': 'face-attendance-system-7fccd.appspot.com'
+})
 
 db = firestore.client()
+bucket = storage.bucket()

@@ -1,35 +1,82 @@
-import os
-import base64
 import cv2
 import numpy as np
-from firebase_config import db
+from firebase_config import db, bucket
+from face_engine import get_embedding
+import uuid
 
-DATASET = "dataset"
-DATABASE = "database/attendance.db"
+# 🔥 Upload image to Firebase Storage
+def upload_image(image):
+
+    _, buffer = cv2.imencode('.jpg', image)
+    image_bytes = buffer.tobytes()
+
+    filename = f"faces/{uuid.uuid4()}.jpg"
+    blob = bucket.blob(filename)
+
+    blob.upload_from_string(image_bytes, content_type='image/jpeg')
+    blob.make_public()
+
+    return blob.public_url
 
 
-def register_student(name, roll_no, department, images):
+def register_student():
 
-    student_folder = f"{name}_{roll_no}"
-    student_path = os.path.join(DATASET, student_folder)
+    name = input("Enter Name: ")
+    roll = input("Enter Roll No: ")
+    dept = input("Enter Department: ")
 
-    os.makedirs(student_path, exist_ok=True)
+    cap = cv2.VideoCapture(0)
 
-    db.collection("students").add({
+    embeddings = []
+    image_urls = []
+
+    print("📸 Capturing faces... Press 'q' to stop")
+
+    while True:
+
+        ret, frame = cap.read()
+        if not ret:
+            break
+
+        cv2.imshow("Register Face", frame)
+
+        emb = get_embedding(frame)
+
+        if emb is not None:
+
+            embeddings.append(emb.tolist())
+
+            url = upload_image(frame)
+            image_urls.append(url)
+
+            print(f"Captured: {len(embeddings)}")
+
+        # Stop after 5 images
+        if len(embeddings) >= 5:
+            break
+
+        if cv2.waitKey(1) & 0xFF == ord('q'):
+            break
+
+    cap.release()
+    cv2.destroyAllWindows()
+
+    if len(embeddings) == 0:
+        print("❌ No face detected")
+        return
+
+    avg_embedding = np.mean(embeddings, axis=0).tolist()
+
+    db.collection("students").document(roll).set({
         "name": name,
-        "roll_no": roll_no,
-        "department": department
+        "roll": roll,
+        "dept": dept,
+        "embedding": avg_embedding,
+        "images": image_urls
     })
 
-    for i, img in enumerate(images):
+    print("✅ Student registered successfully!")
 
-        img_data = base64.b64decode(img.split(",")[1])
-        nparr = np.frombuffer(img_data, np.uint8)
 
-        frame = cv2.imdecode(nparr, cv2.IMREAD_GRAYSCALE)
-
-        img_path = os.path.join(student_path, f"img{i}.jpg")
-
-        cv2.imwrite(img_path, frame)
-
-    return True
+if __name__ == "__main__":
+    register_student()
