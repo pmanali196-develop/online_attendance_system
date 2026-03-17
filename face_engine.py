@@ -1,11 +1,19 @@
 from insightface.app import FaceAnalysis
 import numpy as np
 
-app = FaceAnalysis()
-app.prepare(ctx_id=0)
+app = None
+
+def load_model():
+    global app
+    if app is None:
+        app = FaceAnalysis(name='buffalo_s')    # smaller model
+        app.prepare(ctx_id=-1)  # force CPU
+
 
 def get_embedding(image):
 
+    load_model()
+    
     faces = app.get(image)
 
     if len(faces) == 0:
