@@ -1,45 +1,26 @@
 import cv2
-import pickle
-from firebase_config import db
+import numpy as np
 from datetime import datetime
 
-recognizer = cv2.face.LBPHFaceRecognizer_create()
-recognizer.read("trainer/face_model.yml")
-
-with open("trainer/labels.pkl", "rb") as f:
-    label_map = pickle.load(f)
-
-face_cascade = cv2.CascadeClassifier(
-    cv2.data.haarcascades + "haarcascade_frontalface_default.xml"
-)
-
-DATABASE = "database/attendance.db"
+from firebase_config import db
+from face_engine import get_embedding, compare_embeddings
 
 
-def mark_attendance(student_name, roll_no):
-
-    today = datetime.now().strftime("%Y-%m-%d")
-    time_now = datetime.now().strftime("%H:%M:%S")
-
-    # Check if already marked today
-    docs = db.collection("attendance") \
-        .where("roll_no", "==", roll_no) \
-        .where("date", "==", today) \
-        .stream()
-
-    if len(list(docs)) == 0:
-
-        db.collection("attendance").add({
-            "name": student_name,
-            "roll_no": roll_no,
-            "date": today,
-            "time": time_now,
-            "status": "Present"
-        })
-
-def start_recognition():
+def recognize():
 
     cap = cv2.VideoCapture(0)
+
+    print("🎥 Starting Attendance... Press 'q' to quit")
+
+    # Load all students from Firestore
+    students = []
+    docs = db.collection("students").stream()
+
+    for doc in docs:
+        data = doc.to_dict()
+        students.append(data)
+
+    marked = set()  # to avoid duplicate attendance
 
     while True:
 
@@ -47,27 +28,34 @@ def start_recognition():
         if not ret:
             break
 
-        gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+        emb = get_embedding(frame)
 
-        faces = face_cascade.detectMultiScale(gray,1.2,5)
+        if emb is not None:
 
-        for (x,y,w,h) in faces:
+            for student in students:
 
-            face_roi = gray[y:y+h, x:x+w]
+                match, dist = compare_embeddings(emb, student["embedding"])
 
-            label, confidence = recognizer.predict(face_roi)
+                if match and student["roll"] not in marked:
 
-            if confidence < 70:
+                    print(f"✅ Recognized: {student['name']} (Dist: {dist:.2f})")
 
-                student_folder = label_map[label]
-                name, roll = student_folder.rsplit("_",1)
+                    db.collection("attendance").add({
+                        "name": student["name"],
+                        "roll": student["roll"],
+                        "time": datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+                    })
 
-                mark_attendance(name, roll)
+                    marked.add(student["roll"])
 
-        cv2.imshow("Attendance", frame)
+        cv2.imshow("Attendance System", frame)
 
-        if cv2.waitKey(1) & 0xFF == ord("q"):
+        if cv2.waitKey(1) & 0xFF == ord('q'):
             break
 
     cap.release()
     cv2.destroyAllWindows()
+
+
+if __name__ == "__main__":
+    recognize()
