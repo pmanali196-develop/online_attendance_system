@@ -17,19 +17,56 @@ navigator.mediaDevices.getUserMedia({ video: true })
 
 function onOpenCvReady() {
 
-    faceCascade = new cv.CascadeClassifier()
+    // faceCascade = new cv.CascadeClassifier()
 
-    fetch('/static/haarcascade_frontalface_default.xml')
-        .then(res => res.arrayBuffer())
-        .then(data => {
+    // fetch('/static/haarcascade_frontalface_default.xml')
+    //     .then(res => res.arrayBuffer())
+    //     .then(data => {
 
-            let bytes = new Uint8Array(data)
-            cv.FS_createDataFile('/', 'face.xml', bytes, true, false, false)
+    //         let bytes = new Uint8Array(data)
+    //         cv.FS_createDataFile('/', 'face.xml', bytes, true, false, false)
 
-            faceCascade.load('face.xml')
+    //         faceCascade.load('face.xml')
 
-            startDetection()
-        })
+    //         startDetection()
+    //     })
+
+    cv.onRuntimeInitialized = async () => {     // Wait for opencv
+    try {
+        faceCascade = new cv.CascadeClassifier();
+
+        let response = await fetch('/static/haarcascade_frontalface_default.xml');
+
+        // Check fetch success...
+        if (!response.ok) {
+            throw new Error("Failed to fetch cascade: " + response.status);
+        }
+
+        let data = await response.arrayBuffer();
+        let bytes = new Uint8Array(data);
+
+        cv.FS_createDataFile('/', 'face.xml', bytes, true, false, false);
+
+        let loaded = faceCascade.load('face.xml');
+
+        // Validate cascade load
+        if (!loaded) {
+            throw new Error("Cascade load failed");
+        }
+
+        console.log("Cascade loaded successfully");
+
+        startDetection();
+
+    } catch (err) {
+        console.error("Error loading cascade:", err);
+
+        // Retry logic after delay (important for Render cold starts)
+        setTimeout(() => {
+            location.reload();
+        }, 2000);
+    }
+};
 }
 
 function startDetection() {

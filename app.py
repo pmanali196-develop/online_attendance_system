@@ -10,7 +10,8 @@ from firebase_config import db
 # from register_face import register_student
 from recognize_attendance import start_recognition
 
-app = Flask(__name__, template_folder="templates")
+
+app = Flask(__name__, static_folder="static", template_folder="templates")
 
 face_cascade = cv2.CascadeClassifier(
     cv2.data.haarcascades + "haarcascade_frontalface_default.xml"
