@@ -1,6 +1,10 @@
 const video = document.getElementById("video")
 
 let embeddings = []
+let images = []
+
+let captureCount = 0
+let maxCaptures = 10
 
 let blinkCount = 0
 let lastEyeOpen = true
@@ -16,6 +20,59 @@ async function loadModels() {
     await faceapi.nets.tinyFaceDetector.loadFromUri('/models')
     await faceapi.nets.faceRecognitionNet.loadFromUri('/models')
     await faceapi.nets.faceLandmark68Net.loadFromUri('/models')
+}
+
+// 🚀 AUTO CAPTURE
+async function startCapture() {
+
+    embeddings = []
+    images = []
+    captureCount = 0
+
+    document.getElementById("status").innerText = "Capturing..."
+
+    let interval = setInterval(async () => {
+
+        const detection = await faceapi.detectSingleFace(video,
+            new faceapi.TinyFaceDetectorOptions())
+            .withFaceLandmarks()
+            .withFaceDescriptor()
+
+        if (detection) {
+
+            embeddings.push(Array.from(detection.descriptor))
+
+            // 📸 crop face
+            const box = detection.detection.box
+
+            let canvas = document.createElement("canvas")
+            canvas.width = 200
+            canvas.height = 200
+
+            let ctx = canvas.getContext("2d")
+
+            ctx.drawImage(
+                video,
+                box.x, box.y, box.width, box.height,
+                0, 0, 200, 200
+            )
+
+            images.push(canvas.toDataURL("image/jpeg"))
+
+            captureCount++
+
+            document.getElementById("status").innerText =
+                `Captured ${captureCount}/${maxCaptures}`
+        }
+
+        if (captureCount >= maxCaptures) {
+            clearInterval(interval)
+
+            document.getElementById("status").innerText =
+                "Capture complete ✅"
+        }
+
+    }, 500)
 }
 
 // 👁️ BLINK DETECTION
@@ -124,16 +181,29 @@ async function startLivenessCheck() {
 // 📡 REGISTER
 async function registerStudent() {
 
-    let name = document.getElementById("name").value
-    let roll = document.getElementById("roll").value
-    let dept = document.getElementById("dept").value
+    let name = document.getElementById("name").value.trim()
+    let roll = document.getElementById("roll").value.trim()
+    let dept = document.getElementById("dept").value.trim()
+
+
+    // ✅ VALIDATION
+    if (!name || !roll || !dept) {
+        alert("All fields are required!")
+        return
+    }
+
+    if (embeddings.length < 5) {
+        alert("Please capture face properly!")
+        return
+    }
 
     const res = await fetch("/register_student", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
             name, roll, dept,
-            embeddings: embeddings
+            embeddings: embeddings,
+            images: images
         })
     })
 
