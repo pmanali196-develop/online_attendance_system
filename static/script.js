@@ -17,9 +17,9 @@ async function startVideo() {
 }
 
 async function loadModels() {
-    await faceapi.nets.tinyFaceDetector.loadFromUri('/models')
-    await faceapi.nets.faceRecognitionNet.loadFromUri('/models')
-    await faceapi.nets.faceLandmark68Net.loadFromUri('/models')
+    await faceapi.nets.tinyFaceDetector.loadFromUri('static/models')
+    await faceapi.nets.faceRecognitionNet.loadFromUri('static/models')
+    await faceapi.nets.faceLandmark68Net.loadFromUri('static/models')
 }
 
 // 🚀 AUTO CAPTURE
