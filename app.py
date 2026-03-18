@@ -9,7 +9,7 @@ import uuid
 from flask import Flask, render_template, request, jsonify
 from firebase_config import db
 from face_engine import get_embedding, compare_embeddings
-from recognize_attendance import start_recognition
+# from recognize_attendance import start_recognition
 # from register_face import register_student
 
 
