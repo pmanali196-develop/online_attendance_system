@@ -5,3 +5,15 @@
 new_env
 __pycache__/
 .vscode/
+Dockerfile
+database/
+face_engine.py
+firebase_key.json
+recognize_attendance.py
+register_face.py
+static/haarcascade_frontalface_default.xml
+static/style1.css
+static/style2.css
+templates/attendance.html
+templates/register.html
+trainer/
