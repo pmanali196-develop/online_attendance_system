@@ -1,7 +1,7 @@
 from flask import Flask, render_template, request, jsonify
 import numpy as np
 import base64
-from firebase_config import db
+from firebase_config import db, bucket
 
 app = Flask(__name__)
 
