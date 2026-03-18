@@ -1,4 +1,4 @@
-const video = document.getElementById("video")
+let video
 
 let embeddings = []
 let images = []
@@ -238,6 +238,13 @@ async function markAttendance() {
 
 window.onload = async () => {
 
+    video = document.getElementById("video")
+
+    if (!video) {
+        alert("Video element not found!")
+        return
+    }
+    
     if (typeof faceapi === "undefined") {
         alert("face-api.js failed to load!")
         return
