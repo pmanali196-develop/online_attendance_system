@@ -17,9 +17,9 @@ async function startVideo() {
 }
 
 async function loadModels() {
-    await faceapi.nets.tinyFaceDetector.loadFromUri('static/models')
-    await faceapi.nets.faceRecognitionNet.loadFromUri('static/models')
-    await faceapi.nets.faceLandmark68Net.loadFromUri('static/models')
+    await faceapi.nets.tinyFaceDetector.loadFromUri('/models')
+    await faceapi.nets.faceRecognitionNet.loadFromUri('/models')
+    await faceapi.nets.faceLandmark68Net.loadFromUri('/models')
 }
 
 // 🚀 AUTO CAPTURE
@@ -93,27 +93,27 @@ function distance(a, b) {
 }
 
 // 🎯 CAPTURE EMBEDDINGS
-async function startCapture() {
+// async function startCapture() {
 
-    embeddings = []
+//     embeddings = []
 
-    for (let i = 0; i < 10; i++) {
+//     for (let i = 0; i < 10; i++) {
 
-        const detection = await faceapi.detectSingleFace(video,
-            new faceapi.TinyFaceDetectorOptions())
-            .withFaceLandmarks()
-            .withFaceDescriptor()
+//         const detection = await faceapi.detectSingleFace(video,
+//             new faceapi.TinyFaceDetectorOptions())
+//             .withFaceLandmarks()
+//             .withFaceDescriptor()
 
-        if (detection) {
-            embeddings.push(Array.from(detection.descriptor))
-        }
+//         if (detection) {
+//             embeddings.push(Array.from(detection.descriptor))
+//         }
 
-        await new Promise(r => setTimeout(r, 400))
-    }
+//         await new Promise(r => setTimeout(r, 400))
+//     }
 
-    document.getElementById("status").innerText =
-        "Captured " + embeddings.length + " samples"
-}
+//     document.getElementById("status").innerText =
+//         "Captured " + embeddings.length + " samples"
+// }
 
 // 🧠 LIVENESS CHECK
 async function startLivenessCheck() {
@@ -236,5 +236,17 @@ async function markAttendance() {
     alert(data.message)
 }
 
-startVideo()
-loadModels()
+window.onload = async () => {
+
+    if (typeof faceapi === "undefined") {
+        alert("face-api.js failed to load!")
+        return
+    }
+
+    await loadModels()
+    await startVideo()
+
+    setTimeout(() => {
+        startCapture()
+    }, 2000)
+}
