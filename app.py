@@ -1,5 +1,6 @@
 from flask import Flask, render_template, request, jsonify
 import numpy as np
+import base64
 from firebase_config import db
 
 app = Flask(__name__)
@@ -20,17 +21,34 @@ def register_student():
     roll = data["roll"]
     dept = data["dept"]
     embeddings = data["embeddings"]
+    images = data["images"]
+
+    image_urls = []
+
+    for i, img in enumerate(images):
+
+        img_data = base64.b64decode(img.split(",")[1])
+
+        file_name = f"{roll}/img_{i}.jpg"
+
+        blob = bucket.blob(file_name)
+        blob.upload_from_string(img_data, content_type="image/jpeg")
+
+        blob.make_public()
+
+        image_urls.append(blob.public_url)
 
     student_data = {
         "name": name,
         "roll": roll,
         "dept": dept,
-        "embeddings": embeddings
+        "embeddings": embeddings,
+        "images": image_urls
     }
 
     db.collection("students").add(student_data)
 
-    return jsonify({"message": "Student Registered"})
+    return jsonify({"message": "Student Registered Successfully"})
 
 
 # GET STUDENTS
