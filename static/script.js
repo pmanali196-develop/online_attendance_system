@@ -207,8 +207,19 @@ async function registerStudent() {
         })
     })
 
-    const data = await res.json()
-    alert(data.message)
+    const text = await res.text()
+
+    try {
+        const data = JSON.parse(text)
+        alert(data.message || data.error)
+    }
+    catch (e) {
+        console.error("Server returned HTML:", text)
+        alert("Server error — check backend logs")
+    }
+
+    // const data = await res.json()
+    // alert(data.message)
 }
 
 // 📡 ATTENDANCE
@@ -244,7 +255,7 @@ window.onload = async () => {
         alert("Video element not found!")
         return
     }
-    
+
     if (typeof faceapi === "undefined") {
         alert("face-api.js failed to load!")
         return

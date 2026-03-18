@@ -15,41 +15,48 @@ def home():
 @app.route("/register_student", methods=["POST"])
 def register_student():
 
-    data = request.json
+    try:
 
-    name = data["name"]
-    roll = data["roll"]
-    dept = data["dept"]
-    embeddings = data["embeddings"]
-    images = data["images"]
+        data = request.json
 
-    image_urls = []
+        name = data["name"]
+        roll = data["roll"]
+        dept = data["dept"]
+        embeddings = data["embeddings"]
+        images = data["images"]
 
-    for i, img in enumerate(images):
+        print("Images received:", len(images))
+        
+        image_urls = []
 
-        img_data = base64.b64decode(img.split(",")[1])
+        for i, img in enumerate(images):
 
-        file_name = f"{roll}/img_{i}.jpg"
+            img_data = base64.b64decode(img.split(",")[1])
 
-        blob = bucket.blob(file_name)
-        blob.upload_from_string(img_data, content_type="image/jpeg")
+            file_name = f"{roll}/img_{i}.jpg"
 
-        blob.make_public()
+            blob = bucket.blob(file_name)
+            blob.upload_from_string(img_data, content_type="image/jpeg")
 
-        image_urls.append(blob.public_url)
+            blob.make_public()
 
-    student_data = {
-        "name": name,
-        "roll": roll,
-        "dept": dept,
-        "embeddings": embeddings,
-        "images": image_urls
-    }
+            image_urls.append(blob.public_url)
 
-    db.collection("students").add(student_data)
+        student_data = {
+            "name": name,
+            "roll": roll,
+            "dept": dept,
+            "embeddings": embeddings,
+            "images": image_urls
+        }
 
-    return jsonify({"message": "Student Registered Successfully"})
+        db.collection("students").add(student_data)
 
+        return jsonify({"message": "Student Registered Successfully"})
+
+    except Exception as e:
+        print("ERROR:", str(e))
+        return jsonify({"error": str(e)}), 500
 
 # GET STUDENTS
 @app.route("/students")
