@@ -1,33 +1,38 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Attendance System</title>
+    <title>Face Attendance</title>
+
+    <script defer src="https://cdn.jsdelivr.net/npm/face-api.js"></script>
+    <script defer src="/static/script.js"></script>
 </head>
 
 <body>
 
 <h2>Register Student</h2>
 
-<input id="name" placeholder="Name">
-<input id="roll" placeholder="Roll No">
-<input id="dept" placeholder="Department">
+<input type="text" id="name" placeholder="Name">
+<input type="text" id="roll" placeholder="Roll">
+<input type="text" id="dept" placeholder="Department">
 
 <br><br>
 
-<video id="video" autoplay style="display:none"></video>
-<canvas id="canvas" width="320" height="240"></canvas>
+<video id="video" width="400" height="300" autoplay muted></video>
 
-<p id="count">Images: 0</p>
+<br><br>
 
+<button onclick="startCapture()">Capture Face</button>
 <button onclick="registerStudent()">Register</button>
+
+<p id="status"></p>
 
 <hr>
 
-<h2>Mark Attendance</h2>
-<button onclick="markAttendance()">Start Attendance</button>
+<h2>Mark Attendance (Liveness Required)</h2>
 
-<script src="https://docs.opencv.org/4.x/opencv.js" onload="onOpenCvReady()"></script>
-<script src="/static/script.js"></script>
+<button onclick="startLivenessCheck()">Start Liveness Check</button>
+
+<p id="livenessStatus"></p>
 
 </body>
 </html>
